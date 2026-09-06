@@ -62,7 +62,7 @@ func main() {
 	}
 	allStats := make([]workerStats, *concurrency)
 
-	stopChan := make(chan struct{})
+	var stopped atomic.Bool
 	var wg sync.WaitGroup
 
 	startTime := time.Now()
@@ -73,7 +73,7 @@ func main() {
 			defer wg.Done()
 			client := clients[workerIdx%len(clients)]
 			stats := &allStats[workerIdx]
-			stats.latencies = make([]time.Duration, 0, 100000)
+			stats.latencies = make([]time.Duration, 0, 10000)
 
 			req := &eventv1.IngestRequest{
 				EventId:   "evt-bench",
@@ -82,32 +82,33 @@ func main() {
 				Timestamp: time.Now().UnixNano(),
 			}
 
-			for {
-				select {
-				case <-stopChan:
-					return
-				default:
-				}
+			var localSuccess, localErrors int64
+			var iter int
 
+			for !stopped.Load() {
 				callStart := time.Now()
 				resp, err := client.Ingest(context.Background(), req)
 				elapsed := time.Since(callStart)
 
 				if err != nil || (resp != nil && !resp.Accepted) {
-					atomic.AddInt64(&totalErrors, 1)
+					localErrors++
 				} else {
-					atomic.AddInt64(&totalSuccess, 1)
-					if len(stats.latencies) < cap(stats.latencies) {
+					localSuccess++
+					iter++
+					if iter%10 == 0 && len(stats.latencies) < cap(stats.latencies) {
 						stats.latencies = append(stats.latencies, elapsed)
 					}
 				}
 			}
+
+			atomic.AddInt64(&totalSuccess, localSuccess)
+			atomic.AddInt64(&totalErrors, localErrors)
 		}(w)
 	}
 
 	// Run for the designated test duration
 	time.Sleep(*duration)
-	close(stopChan)
+	stopped.Store(true)
 	wg.Wait()
 	totalElapsed := time.Since(startTime)
 

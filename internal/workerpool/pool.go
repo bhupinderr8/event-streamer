@@ -19,12 +19,14 @@ type WorkerPool struct {
 }
 
 // New creates and starts a new non-blocking worker pool.
+// New creates and starts a high-capacity non-blocking worker pool.
 func New(producer broker.Producer, numWorkers int, bufferCapacity int) *WorkerPool {
 	if numWorkers <= 0 {
 		numWorkers = 32
 	}
 	if bufferCapacity <= 0 {
 		bufferCapacity = 65536
+		bufferCapacity = 131072
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -88,6 +90,7 @@ func (wp *WorkerPool) worker() {
 }
 
 // Stop terminates the worker pool and drains in-flight events.
+// Stop safely drains and terminates the worker pool.
 func (wp *WorkerPool) Stop() {
 	wp.cancel()
 	close(wp.queue)

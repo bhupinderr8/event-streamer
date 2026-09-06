@@ -10,7 +10,10 @@ import (
 // Producer defines the interface for publishing events to a message broker.
 type Producer interface {
 	// Publish writes a message to the specified topic with a key and value payload.
+	// Publish writes a single message to the specified topic with a key and value payload.
 	Publish(ctx context.Context, topic string, key string, value []byte) error
+	// PublishBatch writes a slice of messages in a single batched operation.
+	PublishBatch(ctx context.Context, msgs []kafka.Message) error
 	// Close safely flushes any buffered messages and closes the producer.
 	Close() error
 }
@@ -79,6 +82,16 @@ func (p *kafkaProducer) Publish(ctx context.Context, topic string, key string, v
 		Time:  time.Now(),
 	}
 	return p.writer.WriteMessages(ctx, msg)
+}
+
+// PublishBatch writes multiple messages directly to Kafka.
+func (p *kafkaProducer) PublishBatch(ctx context.Context, msgs []kafka.Message) error {
+	for i := range msgs {
+		if msgs[i].Topic == "" {
+			msgs[i].Topic = p.defaultTopic
+		}
+	}
+	return p.writer.WriteMessages(ctx, msgs...)
 }
 
 // Close flushes buffered messages and closes connections.
