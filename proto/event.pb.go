@@ -151,6 +151,221 @@ func (x *IngestResponse) GetProcessedAt() int64 {
 	return 0
 }
 
+// IngestBatchRequest represents a batch of incoming events from a tenant.
+type IngestBatchRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Events        []*IngestRequest       `protobuf:"bytes,2,rep,name=events,proto3" json:"events,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IngestBatchRequest) Reset() {
+	*x = IngestBatchRequest{}
+	mi := &file_proto_event_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IngestBatchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IngestBatchRequest) ProtoMessage() {}
+
+func (x *IngestBatchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_event_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IngestBatchRequest.ProtoReflect.Descriptor instead.
+func (*IngestBatchRequest) Descriptor() ([]byte, []int) {
+	return file_proto_event_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *IngestBatchRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *IngestBatchRequest) GetEvents() []*IngestRequest {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+// IngestBatchResponse represents the batch processing outcome.
+type IngestBatchResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Accepted      bool                   `protobuf:"varint,1,opt,name=accepted,proto3" json:"accepted,omitempty"`
+	AcceptedCount int32                  `protobuf:"varint,2,opt,name=accepted_count,json=acceptedCount,proto3" json:"accepted_count,omitempty"`
+	RejectedCount int32                  `protobuf:"varint,3,opt,name=rejected_count,json=rejectedCount,proto3" json:"rejected_count,omitempty"`
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	ProcessedAt   int64                  `protobuf:"varint,5,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IngestBatchResponse) Reset() {
+	*x = IngestBatchResponse{}
+	mi := &file_proto_event_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IngestBatchResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IngestBatchResponse) ProtoMessage() {}
+
+func (x *IngestBatchResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_event_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IngestBatchResponse.ProtoReflect.Descriptor instead.
+func (*IngestBatchResponse) Descriptor() ([]byte, []int) {
+	return file_proto_event_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *IngestBatchResponse) GetAccepted() bool {
+	if x != nil {
+		return x.Accepted
+	}
+	return false
+}
+
+func (x *IngestBatchResponse) GetAcceptedCount() int32 {
+	if x != nil {
+		return x.AcceptedCount
+	}
+	return 0
+}
+
+func (x *IngestBatchResponse) GetRejectedCount() int32 {
+	if x != nil {
+		return x.RejectedCount
+	}
+	return 0
+}
+
+func (x *IngestBatchResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *IngestBatchResponse) GetProcessedAt() int64 {
+	if x != nil {
+		return x.ProcessedAt
+	}
+	return 0
+}
+
+// IngestStreamResponse represents the stream ingestion outcome.
+type IngestStreamResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Accepted      bool                   `protobuf:"varint,1,opt,name=accepted,proto3" json:"accepted,omitempty"`
+	TotalReceived int64                  `protobuf:"varint,2,opt,name=total_received,json=totalReceived,proto3" json:"total_received,omitempty"`
+	AcceptedCount int64                  `protobuf:"varint,3,opt,name=accepted_count,json=acceptedCount,proto3" json:"accepted_count,omitempty"`
+	RejectedCount int64                  `protobuf:"varint,4,opt,name=rejected_count,json=rejectedCount,proto3" json:"rejected_count,omitempty"`
+	Message       string                 `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
+	ProcessedAt   int64                  `protobuf:"varint,6,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IngestStreamResponse) Reset() {
+	*x = IngestStreamResponse{}
+	mi := &file_proto_event_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IngestStreamResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IngestStreamResponse) ProtoMessage() {}
+
+func (x *IngestStreamResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_event_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IngestStreamResponse.ProtoReflect.Descriptor instead.
+func (*IngestStreamResponse) Descriptor() ([]byte, []int) {
+	return file_proto_event_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *IngestStreamResponse) GetAccepted() bool {
+	if x != nil {
+		return x.Accepted
+	}
+	return false
+}
+
+func (x *IngestStreamResponse) GetTotalReceived() int64 {
+	if x != nil {
+		return x.TotalReceived
+	}
+	return 0
+}
+
+func (x *IngestStreamResponse) GetAcceptedCount() int64 {
+	if x != nil {
+		return x.AcceptedCount
+	}
+	return 0
+}
+
+func (x *IngestStreamResponse) GetRejectedCount() int64 {
+	if x != nil {
+		return x.RejectedCount
+	}
+	return 0
+}
+
+func (x *IngestStreamResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *IngestStreamResponse) GetProcessedAt() int64 {
+	if x != nil {
+		return x.ProcessedAt
+	}
+	return 0
+}
+
 var File_proto_event_proto protoreflect.FileDescriptor
 
 const file_proto_event_proto_rawDesc = "" +
@@ -164,9 +379,27 @@ const file_proto_event_proto_rawDesc = "" +
 	"\x0eIngestResponse\x12\x1a\n" +
 	"\baccepted\x18\x01 \x01(\bR\baccepted\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
-	"\fprocessed_at\x18\x03 \x01(\x03R\vprocessedAt2K\n" +
+	"\fprocessed_at\x18\x03 \x01(\x03R\vprocessedAt\"b\n" +
+	"\x12IngestBatchRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12/\n" +
+	"\x06events\x18\x02 \x03(\v2\x17.event.v1.IngestRequestR\x06events\"\xbc\x01\n" +
+	"\x13IngestBatchResponse\x12\x1a\n" +
+	"\baccepted\x18\x01 \x01(\bR\baccepted\x12%\n" +
+	"\x0eaccepted_count\x18\x02 \x01(\x05R\racceptedCount\x12%\n" +
+	"\x0erejected_count\x18\x03 \x01(\x05R\rrejectedCount\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\x12!\n" +
+	"\fprocessed_at\x18\x05 \x01(\x03R\vprocessedAt\"\xe4\x01\n" +
+	"\x14IngestStreamResponse\x12\x1a\n" +
+	"\baccepted\x18\x01 \x01(\bR\baccepted\x12%\n" +
+	"\x0etotal_received\x18\x02 \x01(\x03R\rtotalReceived\x12%\n" +
+	"\x0eaccepted_count\x18\x03 \x01(\x03R\racceptedCount\x12%\n" +
+	"\x0erejected_count\x18\x04 \x01(\x03R\rrejectedCount\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\x12!\n" +
+	"\fprocessed_at\x18\x06 \x01(\x03R\vprocessedAt2\xe2\x01\n" +
 	"\fEventService\x12;\n" +
-	"\x06Ingest\x12\x17.event.v1.IngestRequest\x1a\x18.event.v1.IngestResponseB9Z7github.com/bhupinder121199/event-streamer/proto;eventv1b\x06proto3"
+	"\x06Ingest\x12\x17.event.v1.IngestRequest\x1a\x18.event.v1.IngestResponse\x12J\n" +
+	"\vIngestBatch\x12\x1c.event.v1.IngestBatchRequest\x1a\x1d.event.v1.IngestBatchResponse\x12I\n" +
+	"\fIngestStream\x12\x17.event.v1.IngestRequest\x1a\x1e.event.v1.IngestStreamResponse(\x01B9Z7github.com/bhupinder121199/event-streamer/proto;eventv1b\x06proto3"
 
 var (
 	file_proto_event_proto_rawDescOnce sync.Once
@@ -180,19 +413,27 @@ func file_proto_event_proto_rawDescGZIP() []byte {
 	return file_proto_event_proto_rawDescData
 }
 
-var file_proto_event_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_event_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_event_proto_goTypes = []any{
-	(*IngestRequest)(nil),  // 0: event.v1.IngestRequest
-	(*IngestResponse)(nil), // 1: event.v1.IngestResponse
+	(*IngestRequest)(nil),        // 0: event.v1.IngestRequest
+	(*IngestResponse)(nil),       // 1: event.v1.IngestResponse
+	(*IngestBatchRequest)(nil),   // 2: event.v1.IngestBatchRequest
+	(*IngestBatchResponse)(nil),  // 3: event.v1.IngestBatchResponse
+	(*IngestStreamResponse)(nil), // 4: event.v1.IngestStreamResponse
 }
 var file_proto_event_proto_depIdxs = []int32{
-	0, // 0: event.v1.EventService.Ingest:input_type -> event.v1.IngestRequest
-	1, // 1: event.v1.EventService.Ingest:output_type -> event.v1.IngestResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: event.v1.IngestBatchRequest.events:type_name -> event.v1.IngestRequest
+	0, // 1: event.v1.EventService.Ingest:input_type -> event.v1.IngestRequest
+	2, // 2: event.v1.EventService.IngestBatch:input_type -> event.v1.IngestBatchRequest
+	0, // 3: event.v1.EventService.IngestStream:input_type -> event.v1.IngestRequest
+	1, // 4: event.v1.EventService.Ingest:output_type -> event.v1.IngestResponse
+	3, // 5: event.v1.EventService.IngestBatch:output_type -> event.v1.IngestBatchResponse
+	4, // 6: event.v1.EventService.IngestStream:output_type -> event.v1.IngestStreamResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_proto_event_proto_init() }
@@ -206,7 +447,7 @@ func file_proto_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_event_proto_rawDesc), len(file_proto_event_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -19,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EventService_Ingest_FullMethodName = "/event.v1.EventService/Ingest"
+	EventService_Ingest_FullMethodName       = "/event.v1.EventService/Ingest"
+	EventService_IngestBatch_FullMethodName  = "/event.v1.EventService/IngestBatch"
+	EventService_IngestStream_FullMethodName = "/event.v1.EventService/IngestStream"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -28,7 +30,12 @@ const (
 //
 // EventService provides high-throughput event ingestion capabilities.
 type EventServiceClient interface {
+	// Ingest accepts a single event from a tenant.
 	Ingest(ctx context.Context, in *IngestRequest, opts ...grpc.CallOption) (*IngestResponse, error)
+	// IngestBatch accepts a batch of events in a single round-trip.
+	IngestBatch(ctx context.Context, in *IngestBatchRequest, opts ...grpc.CallOption) (*IngestBatchResponse, error)
+	// IngestStream provides client-side streaming ingestion for continuous pipelines.
+	IngestStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[IngestRequest, IngestStreamResponse], error)
 }
 
 type eventServiceClient struct {
@@ -49,13 +56,41 @@ func (c *eventServiceClient) Ingest(ctx context.Context, in *IngestRequest, opts
 	return out, nil
 }
 
+func (c *eventServiceClient) IngestBatch(ctx context.Context, in *IngestBatchRequest, opts ...grpc.CallOption) (*IngestBatchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IngestBatchResponse)
+	err := c.cc.Invoke(ctx, EventService_IngestBatch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventServiceClient) IngestStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[IngestRequest, IngestStreamResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &EventService_ServiceDesc.Streams[0], EventService_IngestStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[IngestRequest, IngestStreamResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type EventService_IngestStreamClient = grpc.ClientStreamingClient[IngestRequest, IngestStreamResponse]
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility.
 //
 // EventService provides high-throughput event ingestion capabilities.
 type EventServiceServer interface {
+	// Ingest accepts a single event from a tenant.
 	Ingest(context.Context, *IngestRequest) (*IngestResponse, error)
+	// IngestBatch accepts a batch of events in a single round-trip.
+	IngestBatch(context.Context, *IngestBatchRequest) (*IngestBatchResponse, error)
+	// IngestStream provides client-side streaming ingestion for continuous pipelines.
+	IngestStream(grpc.ClientStreamingServer[IngestRequest, IngestStreamResponse]) error
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -68,6 +103,12 @@ type UnimplementedEventServiceServer struct{}
 
 func (UnimplementedEventServiceServer) Ingest(context.Context, *IngestRequest) (*IngestResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Ingest not implemented")
+}
+func (UnimplementedEventServiceServer) IngestBatch(context.Context, *IngestBatchRequest) (*IngestBatchResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IngestBatch not implemented")
+}
+func (UnimplementedEventServiceServer) IngestStream(grpc.ClientStreamingServer[IngestRequest, IngestStreamResponse]) error {
+	return status.Error(codes.Unimplemented, "method IngestStream not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 func (UnimplementedEventServiceServer) testEmbeddedByValue()                      {}
@@ -108,6 +149,31 @@ func _EventService_Ingest_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventService_IngestBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IngestBatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).IngestBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_IngestBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).IngestBatch(ctx, req.(*IngestBatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_IngestStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(EventServiceServer).IngestStream(&grpc.GenericServerStream[IngestRequest, IngestStreamResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type EventService_IngestStreamServer = grpc.ClientStreamingServer[IngestRequest, IngestStreamResponse]
+
 // EventService_ServiceDesc is the grpc.ServiceDesc for EventService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -119,7 +185,17 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Ingest",
 			Handler:    _EventService_Ingest_Handler,
 		},
+		{
+			MethodName: "IngestBatch",
+			Handler:    _EventService_IngestBatch_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "IngestStream",
+			Handler:       _EventService_IngestStream_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "proto/event.proto",
 }

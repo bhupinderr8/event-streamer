@@ -6,7 +6,14 @@ option go_package = "github.com/bhupinder121199/event-streamer/proto;eventv1";
 
 // EventService provides high-throughput event ingestion capabilities.
 service EventService {
+  // Ingest accepts a single event from a tenant.
   rpc Ingest(IngestRequest) returns (IngestResponse);
+
+  // IngestBatch accepts a batch of events in a single round-trip.
+  rpc IngestBatch(IngestBatchRequest) returns (IngestBatchResponse);
+
+  // IngestStream provides client-side streaming ingestion for continuous pipelines.
+  rpc IngestStream(stream IngestRequest) returns (IngestStreamResponse);
 }
 
 // IngestRequest represents an incoming event from a tenant.
@@ -24,3 +31,27 @@ message IngestResponse {
   int64 processed_at = 3;
 }
 
+// IngestBatchRequest represents a batch of incoming events from a tenant.
+message IngestBatchRequest {
+  string tenant_id = 1;
+  repeated IngestRequest events = 2;
+}
+
+// IngestBatchResponse represents the batch processing outcome.
+message IngestBatchResponse {
+  bool accepted = 1;
+  int32 accepted_count = 2;
+  int32 rejected_count = 3;
+  string message = 4;
+  int64 processed_at = 5;
+}
+
+// IngestStreamResponse represents the stream ingestion outcome.
+message IngestStreamResponse {
+  bool accepted = 1;
+  int64 total_received = 2;
+  int64 accepted_count = 3;
+  int64 rejected_count = 4;
+  string message = 5;
+  int64 processed_at = 6;
+}
