@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package event.v1;
+
+option go_package = "github.com/bhupinder121199/event-streamer/proto;eventv1";
+
+// EventService provides high-throughput event ingestion capabilities.
+service EventService {
+  rpc Ingest(IngestRequest) returns (IngestResponse);
+}
+
+// IngestRequest represents an incoming event from a tenant.
+message IngestRequest {
+  string event_id = 1;
+  string tenant_id = 2;
+  string payload = 3;
+  int64 timestamp = 4;
+}
+
+// IngestResponse represents the ingestion status and acknowledgement.
+message IngestResponse {
+  bool accepted = 1;
+  string message = 2;
+  int64 processed_at = 3;
+}
+
