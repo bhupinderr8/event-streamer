@@ -172,16 +172,23 @@ All backing containers run with strict memory constraints:
   export PATH="$HOME/go/bin:$PATH"
   ```
 
-### 2. Boot Backing Infrastructure
+### 2. Boot Full System with Docker Compose
 
-Start PostgreSQL, Redis, and Apache Kafka in the background:
+Start the entire virtualized architecture (PostgreSQL, Redis, Apache Kafka, Ingestion Server, and Consumer Daemon):
 ```bash
-docker compose up -d
+# Build and boot all daemons in the background
+docker compose up -d --build
+
+# Verify container status and health
 docker compose ps
 ```
 
 Verify service readiness:
 ```bash
+# Ingestion Server Healthz & Metrics
+curl -s http://127.0.0.1:8080/healthz
+curl -s http://127.0.0.1:8080/metrics | grep event_streamer
+
 # Redis Ping
 docker exec streamer-redis redis-cli ping
 
@@ -192,53 +199,45 @@ docker exec streamer-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server loc
 docker exec streamer-postgres pg_isready -U streamer -d events_db
 ```
 
-### 3. Compile Protocol Buffers (Optional)
+### 3. Run Benchmarks via Docker Compose
 
-If modifying `proto/event.proto`, regenerate the stubs:
+Execute the containerized benchmark client on-demand using the `bench` profile:
+
 ```bash
-protoc \
-  --go_out=. \
-  --go_opt=paths=source_relative \
-  --go-grpc_out=. \
-  --go-grpc_opt=paths=source_relative \
-  proto/event.proto
-```
+# Unary Ingestion Mode
+docker compose run --rm bench -addr=server:50051 -mode=unary -duration=10s -concurrency=192 -conns=24
 
-### 4. Build Optimized Binaries
+# High-Density Batch Mode (50-100 events/batch)
+docker compose run --rm bench -addr=server:50051 -mode=batch -duration=10s -concurrency=32 -conns=4 -batch-size=50
 
-Compile stripped release binaries:
-```bash
-# Ingestion Server
-go build -buildvcs=false -ldflags="-s -w" -o bin/server ./cmd/server
-
-# Downstream Kafka-to-PostgreSQL Consumer
-go build -buildvcs=false -ldflags="-s -w" -o bin/consumer ./cmd/consumer
-
-# Multi-mode benchmark harness
-go build -buildvcs=false -ldflags="-s -w" -o bin/bench ./cmd/bench
-```
-
-Run race detector test suites:
-```bash
-go test -v -race ./...
+# Client-Streaming Ingestion Mode
+docker compose run --rm bench -addr=server:50051 -mode=stream -duration=10s -concurrency=8 -conns=2
 ```
 
 ---
 
-## 🖥 Running the System
+## 💻 Local Host Development & Native Execution (Optional)
 
-### Start the Ingestion Server
+You can also run or debug Go binaries natively on the host while backing services run in Docker:
+
+### 1. Build Local Binaries
 ```bash
-# Standard run
-GOMEMLIMIT=1500MiB LOG_LEVEL=warn RATE_LIMIT=1000000 LEASE_BATCH_SIZE=2000 ADMIN_PORT=:8080 ./bin/server
-
-# Strict 2 vCPU constrained run
-taskset -c 0,1 env GOMAXPROCS=2 GOMEMLIMIT=1500MiB LOG_LEVEL=warn RATE_LIMIT=1000000 LEASE_BATCH_SIZE=2000 ADMIN_PORT=:8080 ./bin/server
+go build -buildvcs=false -ldflags="-s -w" -o bin/server ./cmd/server
+go build -buildvcs=false -ldflags="-s -w" -o bin/consumer ./cmd/consumer
+go build -buildvcs=false -ldflags="-s -w" -o bin/bench ./cmd/bench
 ```
 
-### Start the Downstream PostgreSQL Consumer
-In a separate terminal, launch the consumer to drain Kafka into PostgreSQL:
+### 2. Run Race Detector Tests
 ```bash
+go test -v -race ./...
+```
+
+### 3. Run Native Server & Consumer
+```bash
+# Ingestion Server
+GOMEMLIMIT=1500MiB LOG_LEVEL=warn RATE_LIMIT=1000000 LEASE_BATCH_SIZE=2000 ADMIN_PORT=:8080 ./bin/server
+
+# Downstream Kafka Consumer
 ./bin/consumer
 ```
 
