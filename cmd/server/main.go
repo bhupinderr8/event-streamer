@@ -401,8 +401,12 @@ event_streamer_dlq_persisted_total %d
 	adminMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	adminServer := &http.Server{
-		Addr:    adminPort,
-		Handler: adminMux,
+		Addr:              adminPort,
+		Handler:           adminMux,
+		ReadHeaderTimeout: 3 * time.Second,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       30 * time.Second,
 	}
 
 	go func() {

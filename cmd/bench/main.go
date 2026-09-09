@@ -30,7 +30,6 @@ func main() {
 
 	// Establish pooled gRPC client connections with optimized buffer and flow-control settings
 	clients := make([]eventv1.EventServiceClient, *connections)
-	connList := make([]*grpc.ClientConn, *connections)
 	for i := 0; i < *connections; i++ {
 		conn, err := grpc.NewClient(*targetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -44,7 +43,6 @@ func main() {
 			log.Fatalf("failed to connect to gRPC server: %v", err)
 		}
 		defer conn.Close()
-		connList[i] = conn
 		clients[i] = eventv1.NewEventServiceClient(conn)
 	}
 

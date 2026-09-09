@@ -1,3 +1,7 @@
+// Package workerpool provides a sharded, non-blocking event pipeline using a
+// Multi-Producer Single-Consumer (MPSC) architecture. Events are distributed
+// across independent buffered channel shards to minimize lock contention, then
+// batch-drained and published to Kafka.
 package workerpool
 
 import (

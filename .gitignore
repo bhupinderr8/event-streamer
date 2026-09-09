@@ -8,9 +8,20 @@
 .DS_Store
 Thumbs.db
 
+# Binaries
+bin/
+*.exe
+*.test
+
 # Environment
 .env
+.env.*
+!.env.example
 
 # Logs and profiles
 *.log
 *.pprof
+
+# Test artifacts
+coverage.out
+coverage.html

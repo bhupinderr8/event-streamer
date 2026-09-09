@@ -36,7 +36,8 @@ func main() {
 	}
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://streamer:streamer_pass@127.0.0.1:5432/events_db?sslmode=disable"
+		logger.Error("DATABASE_URL environment variable is required")
+		os.Exit(1)
 	}
 
 	batchSize := 1000
@@ -55,7 +56,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	logger.Info("initializing postgresql storage layer", slog.String("db_url", dbURL))
+	logger.Info("initializing postgresql storage layer")
 	store, err := storage.NewPostgresStorage(ctx, dbURL)
 	if err != nil {
 		logger.Error("failed to connect to postgresql", slog.String("error", err.Error()))
@@ -106,7 +107,7 @@ func main() {
 				slog.Int("batch_len", len(eventsBatch)),
 				slog.String("error", err.Error()),
 			)
-			// Retain batch for retry or DLQ
+			// Batch retained for retry on next cycle (offsets not committed)
 			return
 		}
 

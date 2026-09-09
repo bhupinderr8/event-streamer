@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -13,7 +14,11 @@ func TestPostgresStorage_InsertBatch(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	store, err := NewPostgresStorage(ctx, "")
+	connString := os.Getenv("DATABASE_URL")
+	if connString == "" {
+		connString = "postgres://streamer:streamer_pass@127.0.0.1:5432/events_db?sslmode=disable"
+	}
+	store, err := NewPostgresStorage(ctx, connString)
 	if err != nil {
 		t.Fatalf("failed to connect to postgres: %v", err)
 	}

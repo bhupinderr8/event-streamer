@@ -1,3 +1,6 @@
+// Package broker provides a high-throughput Kafka producer with batching,
+// Snappy compression, and a local dead-letter queue (DLQ) file fallback
+// for failed asynchronous writes.
 package broker
 
 import (
@@ -71,7 +74,7 @@ func NewKafkaProducer(cfg Config) Producer {
 	}
 
 	if cfg.DLQPath != "" {
-		if f, err := os.OpenFile(cfg.DLQPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644); err == nil {
+		if f, err := os.OpenFile(cfg.DLQPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600); err == nil {
 			kp.dlqFile = f
 		}
 	}
@@ -93,16 +96,16 @@ func NewKafkaProducer(cfg Config) Producer {
 				count := uint64(len(msgs))
 				kp.asyncErrors.Add(count)
 
+				kp.dlqMu.Lock()
 				if kp.dlqFile != nil {
-					kp.dlqMu.Lock()
 					nowStr := time.Now().Format(time.RFC3339Nano)
 					for _, m := range msgs {
 						b64 := base64.StdEncoding.EncodeToString(m.Value)
 						fmt.Fprintf(kp.dlqFile, "%s\t%s\t%s\t%s\t%s\n", nowStr, m.Topic, string(m.Key), err.Error(), b64)
 					}
 					kp.dlqCount.Add(count)
-					kp.dlqMu.Unlock()
 				}
+				kp.dlqMu.Unlock()
 			}
 		}
 	}

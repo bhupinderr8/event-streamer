@@ -1,3 +1,6 @@
+// Package storage provides durable event persistence using PostgreSQL.
+// Events are batch-inserted using pgx connection pooling with idempotent
+// upsert semantics (ON CONFLICT DO NOTHING) for at-least-once delivery.
 package storage
 
 import (
@@ -10,25 +13,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Storage defines the interface for persisting ingested events to durable relational storage.
-type Storage interface {
-	// InsertBatch inserts a slice of events into PostgreSQL within a single network batch round-trip.
-	InsertBatch(ctx context.Context, events []*eventv1.IngestRequest) error
-	// Ping checks the health and readiness of the PostgreSQL connection pool.
-	Ping(ctx context.Context) error
-	// Close releases all database connections in the pool.
-	Close()
-}
-
-// PostgresStorage implements Storage using pgx connection pooling and batching.
+// PostgresStorage persists events to PostgreSQL using pgx connection pooling and batching.
 type PostgresStorage struct {
 	pool *pgxpool.Pool
 }
 
 // NewPostgresStorage initializes the connection pool and creates the required database tables and indexes.
+// connString must be a valid PostgreSQL connection URI (e.g. from DATABASE_URL env var).
 func NewPostgresStorage(ctx context.Context, connString string) (*PostgresStorage, error) {
 	if connString == "" {
-		connString = "postgres://streamer:streamer_pass@127.0.0.1:5432/events_db?sslmode=disable"
+		return nil, fmt.Errorf("postgres connection string is required (set DATABASE_URL)")
 	}
 
 	cfg, err := pgxpool.ParseConfig(connString)

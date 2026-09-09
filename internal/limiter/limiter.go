@@ -1,3 +1,8 @@
+// Package limiter provides distributed per-tenant rate limiting using a
+// 2-tier token lease architecture. Local in-memory atomic counters serve the
+// fast path (~5ns), while a Redis-backed Lua script handles batch token lease
+// renewal via singleflight coordination (sync.Cond). Idle tenant buckets are
+// automatically evicted after 5 minutes of inactivity.
 package limiter
 
 import (
